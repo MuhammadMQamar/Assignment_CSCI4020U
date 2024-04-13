@@ -3,8 +3,6 @@
 ## Members
 
 Muhammad Qamar
-
 Tanvir Pahwa
-
 Noha Philips
 
