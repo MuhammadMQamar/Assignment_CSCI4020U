@@ -124,13 +124,13 @@ arrayAssignment returns [Expr expr]
 : ID '[' index=expressions ']' '=' valueExpr=expressions { $expr = new ArrayAssignment($ID.text, $index.expr, $valueExpr.expr); };
 
 listLiteral returns [Expr expr]
-: '[' elements=expressionsList ']' { $expr = new ListLiteral($elements.list); };
+: 'listOf[' elements=expressionsList ']' { $expr = new ListLiteral($elements.list); };
 
 mapLiteral returns [Expr expr]
 : '{' pairs=keyValuePairs '}' { $expr = new MapLiteral($pairs.list); };
 
 setLiteral returns [Expr expr]
-: '{' elements=expressionsList '}' { $expr = new SetLiteral($elements.list); };
+: 'setOf(' elements=expressionsList ')' { $expr = new SetLiteral($elements.list); };
 
 keyValuePairs returns [List<PairExpr> list]
 : { $list = new ArrayList<PairExpr>(); }

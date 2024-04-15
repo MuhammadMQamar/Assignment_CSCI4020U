@@ -255,9 +255,83 @@ class Print(val args: List<Expr>): Expr() {
     override fun eval(runtime:Runtime): Data {
         var lastEvaluated: Data = None
         args.forEach { arg ->
-            lastEvaluated = arg.eval(runtime)
-            println(lastEvaluated) 
+            val evaluated = arg.eval(runtime)
+            lastEvaluated = evaluated
+            if (evaluated is ListData) {
+                println(evaluated.elements.joinToString(prefix = "[", postfix = "]"))
+            } else {
+                println(evaluated)
+            }
         }
         return lastEvaluated 
+    }
+}
+
+class ArrayLiteral(val elements: List<Expr>) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val arrayData = elements.map { it.eval(runtime) }.toMutableList()
+        return ArrayData(arrayData)
+    }
+}
+
+class ArrayIndexing(val name: String, val index: Expr) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val arrayData = runtime.lookup(name) as ArrayData
+        val indexData = index.eval(runtime) as IntData
+        val element = arrayData.elements[indexData.value]
+        return if (element is IntData) {
+            element
+        } else {
+            throw Exception("Array contains non-integer element at index $indexData")
+        }
+    }
+}
+
+class ArrayAssignment(val name: String, val index: Expr, val value: Expr) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val arrayData = runtime.lookup(name) as ArrayData
+        val indexData = index.eval(runtime) as IntData
+        val valueData = value.eval(runtime)
+        arrayData.elements[indexData.value] = valueData
+        return valueData
+    }
+}
+
+class LengthFunctionCall(val arg: Expr) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val data = arg.eval(runtime)
+        return when (data) {
+            is ArrayData -> IntData(data.elements.size)
+            is MapData -> IntData(data.pairs.size)
+            is SetData -> IntData(data.elements.size)
+            else -> throw Exception("Unsupported data type for length function")
+        }
+    }
+}
+
+class ListLiteral(val elements: List<Expr>) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val listData = elements.map { it.eval(runtime) }.toMutableList()
+        return ListData(listData)
+    }
+}
+
+class MapLiteral(val pairs: List<Expr>) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val mapData = pairs.map { it.eval(runtime) as PairData }.associate { it.first to it.second }.toMutableMap()
+        return MapData(mapData)
+    }
+}
+
+class SetLiteral(val elements: List<Expr>) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val setData = elements.map { it.eval(runtime) }.toMutableSet()
+        return SetData(setData)
+    }
+}
+
+class PairExpr(val first: Expr, val second: Expr) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        return PairData(first.eval(runtime), second.eval(runtime))
     }
 }
