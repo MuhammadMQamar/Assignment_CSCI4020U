@@ -29,3 +29,21 @@ class FuncData(
 class ArrayData(val elements: MutableList<Data>) : Data() {
     override fun toString() = elements.joinToString(prefix = "[", postfix = "]")
 }
+
+class ListData(val elements: MutableList<Data>) : Data() {
+    override fun toString() = elements.joinToString(prefix = "[", postfix = "]")
+}
+
+class MapData(val pairs: MutableMap<Data, Data>) : Data() {
+    override fun toString() = pairs.entries.joinToString(prefix = "{", postfix = "}") { "${it.key}: ${it.value}" }
+}
+
+class SetData(val elements: MutableSet<Data>) : Data() {
+    override fun toString() = elements.joinToString(prefix = "{", postfix = "}")
+}
+
+class PairData(val first: Data, val second: Data): Data() {
+    override fun toString() = "($first, $second)"
+}
+
+

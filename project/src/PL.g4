@@ -66,6 +66,8 @@ expressions returns [Expr expr] :
     | value { $expr = $value.expr; }
     | arrayLiteral { $expr = $arrayLiteral.expr; }
     | ID '[' index=expressions ']' { $expr = new ArrayIndexing($ID.text, $index.expr); }
+    | mapLiteral { $expr = $mapLiteral.expr; }
+    | setLiteral { $expr = $setLiteral.expr; }
     ;
     
 printStmt returns [Expr expr] : 
@@ -120,6 +122,20 @@ arrayIndexing returns [Expr expr]
 
 arrayAssignment returns [Expr expr]
 : ID '[' index=expressions ']' '=' valueExpr=expressions { $expr = new ArrayAssignment($ID.text, $index.expr, $valueExpr.expr); };
+
+listLiteral returns [Expr expr]
+: '[' elements=expressionsList ']' { $expr = new ListLiteral($elements.list); };
+
+mapLiteral returns [Expr expr]
+: '{' pairs=keyValuePairs '}' { $expr = new MapLiteral($pairs.list); };
+
+setLiteral returns [Expr expr]
+: '{' elements=expressionsList '}' { $expr = new SetLiteral($elements.list); };
+
+keyValuePairs returns [List<PairExpr> list]
+: { $list = new ArrayList<PairExpr>(); }
+  (key=expressions ':' valExpr=expressions { $list.add(new PairExpr($key.expr, $valExpr.expr)); } (',' key=expressions ':' valExpr=expressions { $list.add(new PairExpr($key.expr, $valExpr.expr)); })*)?
+;
 
 fragment INT : '0' | [1-9] [0-9]*;
 STRING : '"' (~["\\])* '"';
