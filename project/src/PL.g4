@@ -65,6 +65,7 @@ expressions returns [Expr expr] :
     | funtionCall { $expr = $funtionCall.expr; }
     | value { $expr = $value.expr; }
     | arrayLiteral { $expr = $arrayLiteral.expr; }
+    | ID '[' index=expressions ']' { $expr = new ArrayIndexing($ID.text, $index.expr); }
     ;
     
 printStmt returns [Expr expr] : 
