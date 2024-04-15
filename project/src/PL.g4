@@ -21,6 +21,8 @@ stmt returns [Expr expr] :
     | expressions { $expr = $expressions.expr; } ';'
     | printStmt { $expr = $printStmt.expr; } ';'?
     | declare { $expr = $declare.expr; }
+    | arrayAssignment { $expr = $arrayAssignment.expr; } ';'
+    | arrayIndexing { $expr = $arrayIndexing.expr; } ';'
     ;
     
 assign returns [Expr expr] : 
@@ -62,6 +64,7 @@ expressions returns [Expr expr] :
     | '(' expressions ')' { $expr = $expressions.expr; }
     | funtionCall { $expr = $funtionCall.expr; }
     | value { $expr = $value.expr; }
+    | arrayLiteral { $expr = $arrayLiteral.expr; }
     ;
     
 printStmt returns [Expr expr] : 
@@ -84,13 +87,22 @@ parametersList returns [List<String> list] :
     { $list = new ArrayList<String>(); } 
    ID { $list.add($ID.text); } (',' ID { $list.add($ID.text); })* 
     ;
+
+expressionsList returns [List<Expr> list]
+: { $list = new ArrayList<Expr>(); }
+  (expressions { $list.add($expressions.expr); } (',' expressions { $list.add($expressions.expr); })*)?
+;
     
 funtionCall returns [Expr expr] : 
     ID '(' args=argumentsList ')' {
         List<Expr> arguments = $args.list != null ? $args.list : new ArrayList<>();
-        $expr = new Invoke($ID.text, arguments);
+        if ($ID.text.equals("length") && arguments.size() == 1) {
+            $expr = new LengthFunctionCall(arguments.get(0));
+        } else {
+            $expr = new Invoke($ID.text, arguments);
+        }
     }
-    ;
+;
 
 value returns [Expr expr]: 
     STRING {$expr = new StringLiteral($STRING.text.substring(1, $STRING.text.length() - 1));}
@@ -99,9 +111,20 @@ value returns [Expr expr]:
     | NUMBER { $expr = new IntLiteral($NUMBER.text); }
     ;
 
+arrayLiteral returns [Expr expr]
+: '[' elements=expressionsList ']' { $expr = new ArrayLiteral($elements.list); };
+
+arrayIndexing returns [Expr expr]
+: ID '[' index=expressions ']' { $expr = new ArrayIndexing($ID.text, $index.expr); };
+
+arrayAssignment returns [Expr expr]
+: ID '[' index=expressions ']' '=' valueExpr=expressions { $expr = new ArrayAssignment($ID.text, $index.expr, $valueExpr.expr); };
+
 fragment INT : '0' | [1-9] [0-9]*;
 STRING : '"' (~["\\])* '"';
 NUMBER :  INT ('.' [0-9]+)? | INT;
 ID : [a-zA-Z][a-zA-Z_0-9]*;
 BOOLEAN : 'true' | 'false';
 WS : [ \t\n\r]+ -> skip;
+COMMENT : '//' .*? '\n' -> skip ;
+

@@ -261,3 +261,48 @@ class Print(val args: List<Expr>): Expr() {
         return lastEvaluated 
     }
 }
+
+class ArrayLiteral(val elements: List<Expr>) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val arrayData = elements.map { it.eval(runtime) }.toMutableList()
+        return ArrayData(arrayData)
+    }
+}
+
+class ArrayIndexing(val name: String, val index: Expr) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val arrayData = runtime.lookup(name) as ArrayData
+        val indexData = index.eval(runtime) as IntData
+        val element = arrayData.elements[indexData.value]
+        return if (element is IntData) {
+            element
+        } else {
+            throw Exception("Array contains non-integer element at index $indexData")
+        }
+    }
+}
+
+class ArrayAssignment(val name: String, val index: Expr, val value: Expr) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val arrayData = runtime.lookup(name) as ArrayData
+        val indexData = index.eval(runtime) as IntData
+        val valueData = value.eval(runtime)
+        arrayData.elements[indexData.value] = valueData
+        return valueData
+    }
+}
+
+class LengthFunctionCall(val arg: Expr) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val arrayData = arg.eval(runtime) as ArrayData
+        return IntData(arrayData.elements.size)
+    }
+}
+
+
+
+
+
+
+
+

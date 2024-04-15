@@ -25,3 +25,7 @@ class FuncData(
 ): Data() {
     override fun toString() = "Function $name"
 }
+
+class ArrayData(val elements: MutableList<Data>) : Data() {
+    override fun toString() = elements.joinToString(prefix = "[", postfix = "]")
+}
