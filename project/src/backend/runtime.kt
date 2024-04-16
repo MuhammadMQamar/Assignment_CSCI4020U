@@ -4,7 +4,15 @@ class Runtime() {
     val symbolTable:MutableMap<String, Data> = mutableMapOf()
 
     fun lookup(name: String): Data {
-        return symbolTable[name] ?: throw RuntimeException("Undefined variable: $name")
+        val data = symbolTable[name]
+        if (data == null) {
+            throw RuntimeException("Undefined variable: $name")
+        }
+        // Handle LambdaData type
+        if (data is LambdaData) {
+            return data
+        }
+        return data
     }
 
     fun assign(name: String, value: Data) {

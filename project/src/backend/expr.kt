@@ -335,3 +335,43 @@ class PairExpr(val first: Expr, val second: Expr) : Expr() {
         return PairData(first.eval(runtime), second.eval(runtime))
     }
 }
+
+class Lambda(val param: String, val body: Expr) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        return LambdaData(param, body)
+    }
+}
+
+class Builtin(val name: String, val arg: String, val lambda: Expr? = null) : Expr() {
+    override fun eval(runtime: Runtime): Data {
+        val data = runtime.lookup(arg)
+        return when (name) {
+            "sort" -> {
+                if (data is ArrayData) {
+                    ArrayData(data.elements.sortedBy { it.toString() }.toMutableList())
+                } else {
+                    throw Exception("Unsupported data type for sort function")
+                }
+            }
+            "filter" -> {
+                if (data is ArrayData && lambda is Lambda) {
+                    val filtered = data.elements.filter { element ->
+                        val newRuntime = runtime.subscope(mapOf(lambda.param to element))
+                        val result = lambda.body.eval(newRuntime)
+                        if (result is BooleanData) {
+                            result.value
+                        } else {
+                            throw Exception("Filter condition must return a boolean")
+                        }
+                    }
+                    ArrayData(filtered.toMutableList())
+                } else {
+                    throw Exception("Unsupported data type for filter function")
+                }
+            }
+            else -> throw Exception("Unsupported builtin function")
+        }
+    }
+}
+
+
