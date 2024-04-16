@@ -37,7 +37,7 @@ class ArrayData(val elements: MutableList<Data>) : Data() {
 }
 
 class ListData(val elements: MutableList<Data>) : Data() {
-    override fun toString() = elements.joinToString(prefix = "listOf[", postfix = "]")
+    override fun toString() = elements.joinToString(prefix = "[", postfix = "]")
 }
 
 class MapData(val pairs: MutableMap<Data, Data>) : Data() {

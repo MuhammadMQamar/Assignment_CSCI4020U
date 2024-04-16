@@ -68,6 +68,7 @@ expressions returns [Expr expr] :
     | ID '[' index=expressions ']' { $expr = new ArrayIndexing($ID.text, $index.expr); }
     | mapLiteral { $expr = $mapLiteral.expr; }
     | setLiteral { $expr = $setLiteral.expr; }
+    | builtin { $expr = $builtin.expr; }
     ;
     
 printStmt returns [Expr expr] : 
@@ -124,7 +125,7 @@ arrayAssignment returns [Expr expr]
 : ID '[' index=expressions ']' '=' valueExpr=expressions { $expr = new ArrayAssignment($ID.text, $index.expr, $valueExpr.expr); };
 
 listLiteral returns [Expr expr]
-: 'listOf[' elements=expressionsList ']' { $expr = new ListLiteral($elements.list); };
+: '[' elements=expressionsList ']' { $expr = new ListLiteral($elements.list); };
 
 mapLiteral returns [Expr expr]
 : '{' pairs=keyValuePairs '}' { $expr = new MapLiteral($pairs.list); };
@@ -137,6 +138,15 @@ keyValuePairs returns [List<PairExpr> list]
   (key=expressions ':' valExpr=expressions { $list.add(new PairExpr($key.expr, $valExpr.expr)); } (',' key=expressions ':' valExpr=expressions { $list.add(new PairExpr($key.expr, $valExpr.expr)); })*)?
 ;
 
+lambda returns [Expr expr] : 
+    'lambda' ID ':' expressions { $expr = new Lambda($ID.text, $expressions.expr); }
+    ;
+
+builtin returns [Expr expr] : 
+    'sort' '(' ID ')' { $expr = new Builtin("sort", $ID.text, null); }
+    | 'filter' '(' ID ',' lambda ')' { $expr = new Builtin("filter", $ID.text, $lambda.expr); }
+    ;
+
 fragment INT : '0' | [1-9] [0-9]*;
 STRING : '"' (~["\\])* '"';
 NUMBER :  INT ('.' [0-9]+)? | INT;
@@ -144,4 +154,3 @@ ID : [a-zA-Z][a-zA-Z_0-9]*;
 BOOLEAN : 'true' | 'false';
 WS : [ \t\n\r]+ -> skip;
 COMMENT : '//' .*? '\n' -> skip ;
-

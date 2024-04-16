@@ -37,7 +37,7 @@ class ArrayData(val elements: MutableList<Data>) : Data() {
 }
 
 class ListData(val elements: MutableList<Data>) : Data() {
-    override fun toString() = elements.joinToString(prefix = "listOf[", postfix = "]")
+    override fun toString() = elements.joinToString(prefix = "[", postfix = "]")
 }
 
 class MapData(val pairs: MutableMap<Data, Data>) : Data() {
@@ -50,4 +50,8 @@ class SetData(val elements: MutableSet<Data>) : Data() {
 
 class PairData(val first: Data, val second: Data): Data() {
     override fun toString() = "($first, $second)"
+}
+
+class LambdaData(val param: String, val body: Expr) : Data() {
+    override fun toString() = "Lambda function"
 }

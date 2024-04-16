@@ -125,7 +125,7 @@ arrayAssignment returns [Expr expr]
 : ID '[' index=expressions ']' '=' valueExpr=expressions { $expr = new ArrayAssignment($ID.text, $index.expr, $valueExpr.expr); };
 
 listLiteral returns [Expr expr]
-: 'listOf[' elements=expressionsList ']' { $expr = new ListLiteral($elements.list); };
+: '[' elements=expressionsList ']' { $expr = new ListLiteral($elements.list); };
 
 mapLiteral returns [Expr expr]
 : '{' pairs=keyValuePairs '}' { $expr = new MapLiteral($pairs.list); };
@@ -154,4 +154,3 @@ ID : [a-zA-Z][a-zA-Z_0-9]*;
 BOOLEAN : 'true' | 'false';
 WS : [ \t\n\r]+ -> skip;
 COMMENT : '//' .*? '\n' -> skip ;
-
